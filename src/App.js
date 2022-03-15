@@ -11,7 +11,7 @@ export default function App() {
 
   console.log('currentAccount: ', currentAccount);
 
-  const contractAddress = '0xEe1C3c1b2757eDA0723cC9b289816d2E77AE2488';
+  const contractAddress = '0x02918287ac128b8f03C466c44f5564592EF31fb2';
   const contractABI = abi.abi;
 
   const getAllWaves = async () => {
@@ -87,6 +87,7 @@ export default function App() {
         const account = accounts[0];
         console.log('Found an authorized account:', account);
         setCurrentAccount(account);
+        getAllWaves();
       } else {
         console.log('No authorized account found');
       }
@@ -128,6 +129,14 @@ export default function App() {
         let count = await wavePortalContract.getTotalWaves();
         console.log('Retrieved total wave count...', count.toNumber());
 
+        let contractBalance = await provider.getBalance(
+          wavePortalContract.address
+        );
+        console.log(
+          "Contract balance:",
+          ethers.utils.formatEther(contractBalance)
+        );
+
         const waveTxn = await wavePortalContract.wave(messageValue, { gasLimit: 300000 });
         console.log('Mining...', waveTxn.hash);
         await waveTxn.wait();
@@ -135,6 +144,19 @@ export default function App() {
 
         count = await wavePortalContract.getTotalWaves();
         console.log('Retrieved total wave count...', count.toNumber());
+
+        let contractBalance_post = await provider.getBalance(wavePortalContract.address);
+        // コントラクトの残高が減っていることを確認
+        if (contractBalance_post < contractBalance){
+          // 減っていたら下記を出力
+          console.log("User won ETH!");
+        } else {
+          console.log("User didn't win ETH.");
+        }
+        console.log(
+          "Contract balance after wave:",
+          ethers.utils.formatEther(contractBalance_post)
+        );
       } else {
         console.log('Ethereum object does not exist!');
       }
